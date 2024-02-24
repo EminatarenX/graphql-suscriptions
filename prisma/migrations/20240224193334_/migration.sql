@@ -1,4 +1,11 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "email" TEXT NOT NULL PRIMARY KEY,
+    "password" TEXT NOT NULL,
+    "webhook" TEXT NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "Post" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "body" TEXT NOT NULL,

@@ -10,10 +10,10 @@ export class UserRegister {
     private readonly bcryptService: IBcrypt
   ) { }
 
-  async run(email: string, password: string): Promise<User> {
+  async run(email: string, password: string, webhook: string): Promise<User> {
     pubSub.publish("NEW_USER", { email, password })
     // this.pubsubService.publish("NEW_USER", {email, password})
     const hashedPassword = await this.bcryptService.hash(password)
-    return this.userRepository.register(email, hashedPassword)
+    return this.userRepository.register(email, hashedPassword, webhook)
   }
 }

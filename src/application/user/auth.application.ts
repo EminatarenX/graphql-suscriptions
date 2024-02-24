@@ -15,6 +15,6 @@ export class AuthUser {
     const isPasswordCorrect = await this.bcryptService.compare(password, user.password)
     if (!isPasswordCorrect) throw new Error("Password is incorrect")
     const token = await this.jwtService.sign(user.email)
-    return new User(user.email, user.email, token)
+    return new User(user.email, user.email, user.webhook, token)
   }
 }

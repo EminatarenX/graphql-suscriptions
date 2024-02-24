@@ -1,6 +1,7 @@
 import { User } from "./User";
 
 export interface IUserRepository {
-  register(email: string, password: string): Promise<User>;
+  register(email: string, password: string, webhook: string): Promise<User>;
   authentication(email: string, password: string): Promise<User>;
+  getUserById(id: string): Promise<User>;
 }

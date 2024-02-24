@@ -11,7 +11,8 @@ datasource db {
 
 model User {
   email String @id 
-  password String 
+  password String
+  webhook String
   posts Post[]
   likes Like[]
   comments Comment[]

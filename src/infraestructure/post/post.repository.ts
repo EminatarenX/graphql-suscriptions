@@ -54,5 +54,34 @@ export class PostPrismaRepository implements IPost {
     ))
   }
 
+  async getPostById(id: string): Promise<Post> {
+    const post = await this.db.post.findUnique({
+      where: {
+        id
+      },
+      include: {
+        likes: true,
+        comments: {
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      }
+    })
+
+    if (!post) {
+      throw new Error('Post not found')
+    }
+
+    return new Post(
+      post.id,
+      post.body,
+      post.userId,
+      post.createdAt,
+      post.updatedAt,
+      post.likes,
+      post.comments
+    )
+  }
 
 } 

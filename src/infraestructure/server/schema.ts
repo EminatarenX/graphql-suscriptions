@@ -4,7 +4,7 @@ import { PubSubService } from "../services/pubsubService";
 import { authUserController, userRegisterController } from "../user/user.dependencies";
 import { IPubsubService } from "../../domain/graphql/IPubsub.repository";
 import { PubSub } from "graphql-subscriptions";
-import { createPostController, getFeedController } from "../post/post.dependencies";
+import { createPostController, getFeedController, getPostByIdController } from "../post/post.dependencies";
 import { likePostController } from "../like/like.dependencies";
 import { commentPostController } from "../comment/comment.dependencies";
 
@@ -100,7 +100,7 @@ export class SchemaGraphql {
                     likePost(postId: String): createLikeMutationResponse
                     commentPost(body: String, postId: String): commentPostMutationResponse
                 }
-                type postsWithLikesAndComments {
+                type postWithLikesAndComments {
                   post: Post
                   likes: [Like]
                   comments: [Comment]
@@ -109,18 +109,38 @@ export class SchemaGraphql {
                   code: String!
                   success: Boolean!
                   message: String!
-                  feed: [postsWithLikesAndComments]
+                  feed: [postWithLikesAndComments]
                   
                 }       
                 type getFeedResponse implements getFeedInterface{
                   code: String!
                   success: Boolean!
                   message: String!
-                  feed: [postsWithLikesAndComments]
+                  feed: [postWithLikesAndComments]
+                }
+
+                type getPost {
+                  code: String!
+                  success: Boolean!
+                  message: String!
+                  post: Post
+                }
+                type getCommentWithLikes {
+                  comment: Comment
+                  likes: [Like]
+                }
+                type getComments {
+                  code: String!
+                  success: Boolean!
+                  message: String!
+                  comments: [getCommentWithLikes]
                 }
                 type Query {
                     getPosts: getFeedResponse
+                    getPost(id: String): getPost
                 }
+
+              
         
                 type Subscription {
                     newUser: User
@@ -129,7 +149,8 @@ export class SchemaGraphql {
       resolvers: [
         {
           Query: {
-            getPosts: getFeedController.run.bind(getFeedController)
+            getPosts: getFeedController.run.bind(getFeedController),
+            getPost: getPostByIdController.run.bind(getPostByIdController)
           },
           Mutation: {
             userRegister: userRegisterController.run.bind(userRegisterController),

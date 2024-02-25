@@ -36,4 +36,24 @@ export class LikePrismaRepository implements ILike {
       like.updatedAt
     )
   }
+
+  async getLikesByPostId(postId: string) {
+    const exist = await this.db.post.findUnique({ where: { id: postId } })
+    if (!exist) {
+      throw new Error('Post not found')
+    }
+    const likes = await this.db.like.findMany({
+      where: {
+        postId
+      }
+    })
+
+    return likes.map(like => new Like(
+      like.id,
+      like.userId,
+      like.postId,
+      like.createdAt,
+      like.updatedAt
+    ))
+  }
 }

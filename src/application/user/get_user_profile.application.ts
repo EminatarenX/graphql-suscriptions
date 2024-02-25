@@ -15,25 +15,27 @@ export class GetUserProfile {
     let success: any = null
     if (id !== userId) {
       try {
-        this.axiosService.post(user.webhook, {
-          event: 'get_user_profile',
+        await this.axiosService.post(user.webhook, {
+          event: 'profile.view',
           data: {
             message: `User has been viewed your profile`,
             code: '200',
-            user: id
+            user: id,
+            date: new Date()
           }
         })
 
 
         success = true
-      } catch (error) {
+        console.log('webhook success')
+      } catch (e) {
+        const error = e as Error
+        console.log('error handling webhook', error.message)
         success = false
       } finally {
-        if (success) {
-
-        } else {
-
-        }
+        // Notify another API about the user profile viewed
+        console.log('Notify another API about the user profile viewed, status: ', success)
+        if (success) { } else { }
       }
     }
 

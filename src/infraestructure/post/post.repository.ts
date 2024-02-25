@@ -27,13 +27,7 @@ export class PostPrismaRepository implements IPost {
 
   async getFeed(userId: string): Promise<Post[]> {
     const posts = await this.db.post.findMany({
-      where: {
-        NOT: {
-          userId: {
-            equals: userId
-          }
-        }
-      },
+
       include: {
         likes: true,
         comments: true
@@ -42,6 +36,7 @@ export class PostPrismaRepository implements IPost {
         createdAt: 'desc'
       }
     })
+
 
     return posts.map(post => new Post(
       post.id,
@@ -60,6 +55,7 @@ export class PostPrismaRepository implements IPost {
         id
       },
       include: {
+        user: true,
         likes: true,
         comments: {
           orderBy: {

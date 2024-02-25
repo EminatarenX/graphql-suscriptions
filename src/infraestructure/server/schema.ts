@@ -5,8 +5,8 @@ import { authUserController, getUserProfileController, userRegisterController } 
 import { IPubsubService } from "../../domain/graphql/IPubsub.repository";
 import { PubSub } from "graphql-subscriptions";
 import { createPostController, getFeedController, getPostByIdController } from "../post/post.dependencies";
-import { likePostController } from "../like/like.dependencies";
-import { commentPostController } from "../comment/comment.dependencies";
+import { getLikesByPostIdController, likePostController } from "../like/like.dependencies";
+import { commentPostController, getCommentsByPostIdController } from "../comment/comment.dependencies";
 
 export const pubSub = new PubSub()
 
@@ -135,15 +135,12 @@ export class SchemaGraphql {
                   message: String!
                   post: Post
                 }
-                type getCommentWithLikes {
-                  comment: Comment
-                  likes: [Like]
-                }
-                type getComments {
-                  code: String!
+                
+                type getCommentsResponse{
+                  code: Int!
                   success: Boolean!
                   message: String!
-                  comments: [getCommentWithLikes]
+                  comments: [Comment]
                 }
                 type GetUser {
                   code: String!
@@ -151,10 +148,19 @@ export class SchemaGraphql {
                   message: String!
                   user: User
                 }
+
+                type getLikesByPostIdResponse {
+                  code: Int!
+                  success: Boolean!
+                  message: String!
+                  likes: [Like]
+}
                 type Query {
                     getPosts: getFeedResponse
                     getPost(id: String): getPost
                     getUserProfile(userId: String): GetUser
+                    getCommentsByPostId(postId: String): getCommentsResponse
+                    getLikesByPostId(postId: String): getLikesByPostIdResponse
                 }
 
               
@@ -168,8 +174,9 @@ export class SchemaGraphql {
           Query: {
             getPosts: getFeedController.run.bind(getFeedController),
             getPost: getPostByIdController.run.bind(getPostByIdController),
-            getUserProfile: getUserProfileController.run.bind(getUserProfileController)
-
+            getUserProfile: getUserProfileController.run.bind(getUserProfileController),
+            getCommentsByPostId: getCommentsByPostIdController.run.bind(getCommentsByPostIdController),
+            getLikesByPostId: getLikesByPostIdController.run.bind(getLikesByPostIdController)
           },
           Mutation: {
             userRegister: userRegisterController.run.bind(userRegisterController),

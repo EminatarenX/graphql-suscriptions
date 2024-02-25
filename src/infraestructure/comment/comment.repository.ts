@@ -26,4 +26,20 @@ export class CommentPrismaRepository {
     );
 
   }
+
+  async getCommentsByPostId(postId: string): Promise<Comment[]> {
+    const comments = await this.db.comment.findMany({
+      where: {
+        postId
+      },
+    })
+
+    return comments.map(comment => new Comment(
+      comment.id,
+      comment.body,
+      comment.userId,
+      comment.postId,
+      comment.createdAt,
+    ))
+  }
 }

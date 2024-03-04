@@ -5,17 +5,18 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
-
+ 
 model User {
   email String @id 
   password String
-  webhook String
+  webhook String?
   posts Post[]
   likes Like[]
   comments Comment[]
+  webhooks Webhook[]
 }
 
 model Post {
@@ -50,3 +51,23 @@ model Comment {
     createdAt DateTime @default(now())
 
   }
+
+  model Webhook {
+      id String @default(uuid()) @id
+      events String
+      url String
+      user User @relation(fields: [userId], references: [email])
+      userId String
+    }
+enum UserEvents {
+  PROFILE_VIEW
+  POST_LIKED
+  POST_COMMENTED
+  }
+
+  model EventSent {
+      id String @default(uuid()) @id
+      event String
+      status String
+      createdAt DateTime @default(now())
+    }

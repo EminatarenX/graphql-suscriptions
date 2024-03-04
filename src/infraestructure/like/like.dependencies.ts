@@ -7,14 +7,19 @@ import { GetLikesByPostIdController } from './controllers/getLikesByPostId.contr
 import { PostPrismaRepository } from '../post/post.repository'
 import { PrismaUserRepository } from '../user/prisma.repository'
 import { AxiosService } from '../services/axios.service'
+import { WebhookRepository } from '../webhook/webhook.repository'
+import { PageLikes } from '../../application/like/PageLikes'
+import { PageLikesController } from './controllers/PageLikes.controller'
 const likeRepository = new LikePrismaRepository()
 const jwtRepository = new JWTService()
 const postRepository = new PostPrismaRepository()
-const userRepository = new PrismaUserRepository()
 const axiosService = new AxiosService()
-const likePostUseCase = new LikePost(likeRepository, jwtRepository, axiosService, postRepository, userRepository)
+const webhookRepository = new WebhookRepository()
+const likePostUseCase = new LikePost(likeRepository, jwtRepository, axiosService, postRepository, webhookRepository)
 export const likePostController = new LikePostController(likePostUseCase)
 // GetLikes by post id
 const getLikesByPostIdUseCase = new GetLikesByPostId(likeRepository)
 export const getLikesByPostIdController = new GetLikesByPostIdController(getLikesByPostIdUseCase)
 
+const pageLikesUseCase = new PageLikes(likeRepository)
+export const pageLikesController = new PageLikesController(pageLikesUseCase)

@@ -56,4 +56,23 @@ export class LikePrismaRepository implements ILike {
       like.updatedAt
     ))
   }
+
+  async pageLikes(postId: string, page: number): Promise<Like[]> {
+    const likes = await this.db.like.findMany({
+      where: {
+        postId
+      },
+      skip: (page - 1) * 10,
+      take: 10
+    })
+
+    return likes.map(like => new Like(
+      like.id,
+      like.userId,
+      like.postId,
+      like.createdAt,
+      like.updatedAt
+    ))
+  }
+
 }

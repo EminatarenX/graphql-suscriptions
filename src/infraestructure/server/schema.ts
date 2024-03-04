@@ -1,12 +1,13 @@
 import { makeExecutableSchema } from "@graphql-tools/schema";
 // import { PubSub } from 'graphql-subscriptions';
 import { PubSubService } from "../services/pubsubService";
-import { authUserController, getUserProfileController, userRegisterController } from "../user/user.dependencies";
+import { authUserController, findUsersLimitController, getUserProfileController, userRegisterController } from "../user/user.dependencies";
 import { IPubsubService } from "../../domain/graphql/IPubsub.repository";
 import { PubSub } from "graphql-subscriptions";
 import { createPostController, getFeedController, getPostByIdController } from "../post/post.dependencies";
 import { getLikesByPostIdController, likePostController } from "../like/like.dependencies";
-import { commentPostController, getCommentsByPostIdController } from "../comment/comment.dependencies";
+import { commentPostController, deleteCommentController, getCommentsByPostIdController } from "../comment/comment.dependencies";
+import { createWebhookController, deleteWebhookController, findWebhookByUserIdController } from "../webhook/webhook.dependencies";
 
 export const pubSub = new PubSub()
 
@@ -25,6 +26,12 @@ export class SchemaGraphql {
                     token: String
                     webhook: String
                     posts: [Post]
+                }
+                type Webhook {
+                  id: String,
+                  events: [String]
+                  url: String
+                  userId: String
                 }
 
                 type Post {
@@ -100,6 +107,15 @@ export class SchemaGraphql {
                   message: String!
                   user: User
                 }
+
+                type WebhookResponse {
+                  code: String!
+                  success: Boolean!
+                  message: String!
+                  webhook: Webhook
+                }
+
+                
                 
         
                 type Mutation {
@@ -108,6 +124,9 @@ export class SchemaGraphql {
                     createPost(content: String): createPostMutationResponse
                     likePost(postId: String): createLikeMutationResponse
                     commentPost(body: String, postId: String): commentPostMutationResponse
+                    createWebhook(events: [String], url: String): WebhookResponse
+                    deleteWebhook: WebhookResponse
+                    deleteComment(id: String): commentPostMutationResponse
                 }
                 type postWithLikesAndComments {
                   post: Post
@@ -155,18 +174,23 @@ export class SchemaGraphql {
                   message: String!
                   likes: [Like]
 }
+                
                 type Query {
                     getPosts: getFeedResponse
                     getPost(id: String): getPost
                     getUserProfile(userId: String): GetUser
                     getCommentsByPostId(postId: String): getCommentsResponse
                     getLikesByPostId(postId: String): getLikesByPostIdResponse
+                    findWebhookByUserId: WebhookResponse
+                    findUsersPage(page: Int): [User]
+                    findLikesPage(postId: String, page: Int): [Like]
                 }
 
               
         
                 type Subscription {
                     newUser: User
+                    newPost: Post
                 }
             `,
       resolvers: [
@@ -176,21 +200,32 @@ export class SchemaGraphql {
             getPost: getPostByIdController.run.bind(getPostByIdController),
             getUserProfile: getUserProfileController.run.bind(getUserProfileController),
             getCommentsByPostId: getCommentsByPostIdController.run.bind(getCommentsByPostIdController),
-            getLikesByPostId: getLikesByPostIdController.run.bind(getLikesByPostIdController)
+            getLikesByPostId: getLikesByPostIdController.run.bind(getLikesByPostIdController),
+            findWebhookByUserId: findWebhookByUserIdController.run.bind(findWebhookByUserIdController),
+            findUsersPage: findUsersLimitController.run.bind(findUsersLimitController),
+            findLikesPage: getLikesByPostIdController.run.bind(getLikesByPostIdController)
           },
           Mutation: {
             userRegister: userRegisterController.run.bind(userRegisterController),
             auth: authUserController.run.bind(authUserController),
             createPost: createPostController.run.bind(createPostController),
             likePost: likePostController.run.bind(likePostController),
-            commentPost: commentPostController.run.bind(commentPostController)
+            commentPost: commentPostController.run.bind(commentPostController),
+            createWebhook: createWebhookController.run.bind(createWebhookController),
+            deleteWebhook: deleteWebhookController.run.bind(deleteWebhookController),
+            deleteComment: deleteCommentController.run.bind(deleteCommentController),
           },
 
           Subscription: {
             newUser: {
               subscribe: () => this.pubsubService.asyncIterator('NEW_USER'),
-              resolve: (payload) => payload
+              resolve: (payload: any) => payload
             },
+            newPost: {
+              subscribe: () => this.pubsubService.asyncIterator("NEW_POST"),
+              resolve: (payload: any) => payload
+            }
+
 
           }
         }

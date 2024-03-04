@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { Comment } from "../../domain/comment/comment";
+import { IComment } from "../../domain/comment/comment.interface";
 
-export class CommentPrismaRepository {
+export class CommentPrismaRepository implements IComment {
   private db: PrismaClient;
   constructor() {
     this.db = new PrismaClient();
@@ -41,5 +42,26 @@ export class CommentPrismaRepository {
       comment.postId,
       comment.createdAt,
     ))
+  }
+  async deleteComment(id: string): Promise<boolean | null> {
+    try {
+
+      const exist = await this.db.comment.findUnique({
+        where: {
+          id
+        }
+      })
+
+      if (!exist) throw new Error('This comment does not exist')
+
+      await this.db.comment.delete({
+        where: { id: exist.id }
+      })
+
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
   }
 }

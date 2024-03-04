@@ -11,10 +11,10 @@ export class AuthUser {
   ) { }
 
   async run(email: string, password: string): Promise<User> {
-    const user = await this.userRepository.authentication(email, password);
+    const user = await this.userRepository.authentication(email);
     const isPasswordCorrect = await this.bcryptService.compare(password, user.password)
     if (!isPasswordCorrect) throw new Error("Password is incorrect")
     const token = await this.jwtService.sign(user.email)
-    return new User(user.email, user.email, user.webhook, token)
+    return new User(user.email, user.email, token)
   }
 }

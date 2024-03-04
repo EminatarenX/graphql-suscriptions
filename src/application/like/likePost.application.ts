@@ -3,6 +3,7 @@ import { IPost } from '../../domain/post/IPost.interface';
 import { IAxios } from '../../domain/services/IAxios';
 import { IJWT } from '../../domain/services/IJWT';
 import { IUserRepository } from '../../domain/user/IUser.repository';
+import { IWebhook } from '../../domain/webhook/IWebhook';
 
 export class LikePost {
   constructor(
@@ -10,31 +11,34 @@ export class LikePost {
     private readonly jwtRepository: IJWT,
     private readonly axiosService: IAxios,
     private readonly postRepository: IPost,
-    private readonly userRepository: IUserRepository) { }
+    private readonly webhookRepository: IWebhook) { }
   async run(postId: string, token: string) {
     const { data: userId } = await this.jwtRepository.verify(token)
     const like = await this.likeRepository.likePost(postId, userId)
     const post = await this.postRepository.getPostById(postId)
-    const user = await this.userRepository.getUserById(post.userId)
+    const webhook = await this.webhookRepository.findWebhookByUserId(post.userId)
     let success: boolean = false
-    try {
-      await this.axiosService.post(user.webhook, {
-        event: 'post.liked',
-        data: {
-          message: 'Your post was liked',
-          code: 200,
-          post: post,
-          like: like.userId,
-          date: new Date()
-        }
 
-      })
+    if (webhook && webhook.userId !== userId && webhook.events.includes('post.liked')) {
 
-      success = true
-    } catch (error) {
-      success = false
-    } finally {
-      console.log('webhook sent')
+      try {
+        await this.axiosService.post(webhook.url || '', {
+          event: 'post.liked',
+          data: {
+            message: 'Your post was liked',
+            code: 200,
+            post: post,
+            like: like.userId,
+            date: new Date()
+          }
+        })
+
+        success = true
+      } catch (error) {
+        success = false
+      } finally {
+
+      }
     }
 
     return like

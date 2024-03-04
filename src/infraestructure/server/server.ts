@@ -3,9 +3,7 @@
 import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
 import { createServer } from 'http';
-import express from 'express';
-import { pubSub } from './schema';
-// import { schema } from './schema';
+import express from 'express'
 import { schema as schemaService } from '../services/pubsub.dependencies';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws'

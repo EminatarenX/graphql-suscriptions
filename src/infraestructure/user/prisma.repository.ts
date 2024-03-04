@@ -7,7 +7,7 @@ export class PrismaUserRepository implements IUserRepository {
   constructor() {
     this.db = new PrismaClient()
   }
-  async register(email: string, password: string, webhook: string): Promise<User> {
+  async register(email: string, password: string): Promise<User> {
 
     const existUser = await this.db.user.findUnique({
       where: {
@@ -21,20 +21,18 @@ export class PrismaUserRepository implements IUserRepository {
       data: {
         email,
         password,
-        webhook
       }
     })
 
     return new User(
       user.email,
       user.password,
-      user.webhook
     )
   }
-  async authentication(email: string, password: string): Promise<User> {
+  async authentication(email: string): Promise<User> {
     const user = await this.db.user.findFirst({ where: { email } });
     if (!user) throw new Error("this user isn't exist");
-    return new User(user.email, user.password, user.webhook);
+    return new User(user.email, user.password)
 
   }
   async getUserById(id: string): Promise<User> {
@@ -52,12 +50,21 @@ export class PrismaUserRepository implements IUserRepository {
       }
     })
     if (!user) throw new Error('This user is not exist')
+
     return new User(
       user.email,
       user.password,
-      user.webhook,
       undefined,
       user.posts
     )
+  }
+  async findUsers(page: number): Promise<User[]> {
+    const users = await this.db.user.findMany({
+      skip: (page - 1) * 10,
+      take: 10,
+
+    })
+
+    return users.map(user => new User(user.email, user.password))
   }
 }
